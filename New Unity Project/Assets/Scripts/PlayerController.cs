@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -51,7 +51,6 @@ public class PlayerController : MonoBehaviour {
 		currentState = new GameState ();
 		currentState.AddCubes (winAmount);
 		SetCountText ();
-		winText.text = "";
 	}
 
 	bool IsFalling() {
@@ -79,13 +78,14 @@ public class PlayerController : MonoBehaviour {
 		body.AddForce (movement * speed);
 
 		if (currentState.state == State.WON) {
-			winText.text = "You Win... FOR NOW!";
+			winText.text = "You Win...FOR NOW!";
 			currentState.floor.GetComponent<Rigidbody>().isKinematic = false;
 			currentState.floor.GetComponent<Rigidbody>().useGravity = true;
 			currentState.ChangeState (State.FALLING);
 		} else if (currentState.state == State.FALLING && !IsFalling()){
 			currentState.ChangeState (State.PLAYING);
 			currentState.floor = GameObject.Find (GetNextLevel());
+			currentState.AddCubes(10);
 			winText.text = "";
 		}
 	}

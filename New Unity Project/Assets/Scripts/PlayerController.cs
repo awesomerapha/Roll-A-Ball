@@ -1,4 +1,4 @@
-	using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -25,8 +25,9 @@ public class GameState {
 	public GameState() {
 		state = State.PLAYING;
 		Levels = new Level[]{
-			new Level ("Level1", 12) ,
-			new Level ("Level2", 10)
+			new Level ("Levels/Level 1/Floor", 12),
+			new Level ("Levels/Level 2/Floor", 10),
+			new Level ("Levels/Level 3/Floor", 18)
 		};
 		count = 0;
 		score = 0;
@@ -69,16 +70,11 @@ public class PlayerController : MonoBehaviour {
 	void Start()
 	{
 		currentState = new GameState ();
-				SetCountText ();
+		SetCountText ();
 	}
 
 	bool IsFalling() {
 		return GetComponent<Rigidbody>().velocity.y < -0.1;
-	}
-
-	string GetNextLevel() {
-		// TODO
-		return "Level2";
 	}
 
 	void FixedUpdate ()

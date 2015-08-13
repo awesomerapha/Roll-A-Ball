@@ -1,4 +1,4 @@
-using UnityEngine;
+	using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -7,50 +7,69 @@ public enum State {
 	WON,
 	FALLING
 }
-
+public class Level
+{
+	public GameObject floor;
+	public int Numcubes;
+	public Level(string name , int numbcubes)
+	{
+		Numcubes = numbcubes;
+		floor = GameObject.Find (name);
+	}
+}
 public class GameState {
 	public State state;
-	public GameObject floor;
-	public int count;
-	public int totalCubes;
+	public Level[] Levels;
+	public int count , score , CurrentLevel;
 
 	public GameState() {
 		state = State.PLAYING;
-		floor = GameObject.Find ("Level1");
+		Levels = new Level[]{
+			new Level ("Level1", 12) ,
+			new Level ("Level2", 10)
+		};
 		count = 0;
-		totalCubes = 0;
+		score = 0;
+		CurrentLevel = 0;
 	}
 
-	public void AddCubes(int cubesInLevel) {
-		totalCubes += cubesInLevel;
-	}
-
+    
 	public void ChangeState(State state) {
 		this.state = state;
 	}
-
+	public Level GetLevel(){
+		return Levels [CurrentLevel];
+	}
 	public void EatCube() {
+
+		score += 1;
 		count += 1;
-		if (count >= totalCubes) {
+		if (count >= GetLevel().Numcubes) {
 			ChangeState(State.WON);
+		
+		
+
+		}
+	}
+	public void NextLevel(){
+		count = 0;
+		if (CurrentLevel + 1 < Levels.Length) {
+			CurrentLevel += 1;
 		}
 	}
 }
 
 public class PlayerController : MonoBehaviour {
-
-	public float speed;
+	
 	public Text countText;
 	public Text winText;
-	public const int winAmount = 12;
 
 	GameState currentState;
 
 	void Start()
 	{
 		currentState = new GameState ();
-		currentState.AddCubes (winAmount);
-		SetCountText ();
+				SetCountText ();
 	}
 
 	bool IsFalling() {
@@ -73,22 +92,30 @@ public class PlayerController : MonoBehaviour {
 		float moveVertical = Input.GetAxis ("Vertical");
 
 		Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
+		for (var i = 0; i < Input.touchCount; ++i) {
+			float dx = Input.GetTouch(i).deltaPosition.x;
+			float dz = Input.GetTouch (i).deltaPosition.y;
+			movement.x += dx;
+			movement.z += dz;
+		}
+		movement.Normalize ();
+		movement *= 10;
 
 		Rigidbody body = GetComponent<Rigidbody> ();
-		body.AddForce (movement * speed);
+		body.AddForce (movement);
 
 		if (currentState.state == State.WON) {
 			winText.text = "You Win...FOR NOW!";
-			currentState.floor.GetComponent<Rigidbody>().isKinematic = false;
-			currentState.floor.GetComponent<Rigidbody>().useGravity = true;
+			currentState.GetLevel().floor.GetComponent<Rigidbody>().isKinematic = false;
+			currentState.GetLevel().floor.GetComponent<Rigidbody>().useGravity = true;
 			currentState.ChangeState (State.FALLING);
 		} else if (currentState.state == State.FALLING && !IsFalling()){
 			currentState.ChangeState (State.PLAYING);
-			currentState.floor = GameObject.Find (GetNextLevel());
-			currentState.AddCubes(10);
+			currentState.NextLevel ();
 			winText.text = "";
 		}
 	}
+
 	void OnTriggerEnter(Collider other) 
 	{
 		if (other.gameObject.CompareTag ("Pickup"))
@@ -100,6 +127,6 @@ public class PlayerController : MonoBehaviour {
 	}
 	void SetCountText ()
 	{
-		countText.text = "Count: " + currentState.count.ToString ();
+		countText.text = "Score: " + currentState.score.ToString ();
 	}
 }
